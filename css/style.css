@@ -681,3 +681,20 @@
     .news-hero-row { padding: 20px; }
     .section-photo-wrap { grid-template-columns: minmax(0, 1fr); }
   }
+
+  /* ── Touch devices: neutralise :hover so links don't need a "double tap"
+     (iOS Safari / mobile Chrome treat the first tap as a hover-trigger when
+     an element's :hover style visibly changes it, silently eating the tap) ── */
+  @media (hover: none) {
+    nav.main-nav a:hover { color: var(--text-secondary); }
+    nav.main-nav a:hover::after { transform: scaleX(0); }
+    .btn-primary:hover { background: var(--accent); transform: none; box-shadow: var(--shadow-sm); }
+    .btn-outline:hover { border-color: var(--border-strong); color: var(--text-primary); transform: none; }
+    .hero-stat:hover { transform: none; box-shadow: var(--shadow-sm); }
+    .pillar-card:hover { box-shadow: var(--shadow-sm); transform: none; border-color: var(--border); }
+    .pillar-card:hover .pillar-icon { transform: none; }
+    .branch-card:hover { box-shadow: var(--shadow-sm); transform: none; border-color: var(--border); }
+    .cta-band .btn-primary:hover { background: #ffffff; }
+    .footer-col a:hover { color: var(--text-secondary); }
+    .footer-links a:hover { color: var(--text-muted); }
+  }
