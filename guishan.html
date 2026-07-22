@@ -30,6 +30,8 @@ fbq('init', 'YOUR_PIXEL_ID_HERE');
     --text-secondary: #64748b;
     --text-muted: #94a3b8;
     --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -71,24 +73,47 @@ fbq('init', 'YOUR_PIXEL_ID_HERE');
     flex: 0 0 auto;
   }
 
-  .hero {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 8 / 5;
-    max-height: 34vh;
-    object-fit: cover;
-    border-radius: 16px;
-    display: block;
-    flex: 0 1 auto;
-  }
-
   .subtitle {
     font-size: 16px;
     font-weight: 700;
     color: var(--accent-strong);
-    margin: 14px 0 0;
+    margin: 0 0 16px;
     flex: 0 0 auto;
   }
+
+  .location {
+    font-size: 14px;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 0 0 16px;
+    flex: 0 0 auto;
+  }
+  .location div + div { margin-top: 4px; }
+
+  .perks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 0 0 auto;
+  }
+  .perks li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .perks .emoji { font-size: 22px; flex-shrink: 0; }
 
   .spacer { flex: 1 1 auto; min-height: 14px; }
 
@@ -125,26 +150,28 @@ fbq('init', 'YOUR_PIXEL_ID_HERE');
 
   <header>
     <img src="assets/landing/k-logo.webp" width="32" height="32" alt="K團購">
-    <span class="brand-name">龜山K團購</span>
+    <span class="brand-name">K團購</span>
   </header>
 
   <h1>龜山K團購・8/15盛大開幕</h1>
-
-  <img
-    class="hero"
-    src="assets/landing/hero.webp"
-    width="800"
-    height="500"
-    fetchpriority="high"
-    alt="小農直送 產地直達 — 新鮮蔬果現採現送">
-
   <p class="subtitle">小農直送・一件免運・可退貨退款</p>
+
+  <div class="location">
+    <div>📍 桃園市龜山區文化五路225號（文華國小對面巷子）</div>
+    <div>🕒 週一至週六 12:00–20:00</div>
+  </div>
+
+  <ul class="perks">
+    <li><span class="emoji">💰</span>加入社團立領 $50 購物金</li>
+    <li><span class="emoji">🥬</span>出示社團畫面加碼送當週小農蔬果</li>
+    <li><span class="emoji">🎉</span>開幕當天到店抽獎，100% 中獎</li>
+  </ul>
 
   <div class="spacer"></div>
 
   <a id="cta" class="cta-btn" href="https://www.facebook.com/groups/1561057388927848/">立即加入社團</a>
 
-  <footer>龜山K團購（悠冉企業社）｜統一編號 93000758</footer>
+  <footer>K團購（悠冉企業社）｜統一編號 93000758</footer>
 
 </div>
 
