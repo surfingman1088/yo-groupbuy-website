@@ -7,8 +7,7 @@
 <meta name="description" content="龜山K團購長庚A8店 8/15盛大開幕。小農直送、一件免運、可退貨退款，立即加入社團。">
 <link rel="icon" href="data:,">
 
-<!-- Meta Pixel Base Code 請自行填入 Pixel ID -->
-<!--
+<!-- Meta Pixel Base Code — 資料集：K團購-龜山中繼頁 (Pixel ID 2139437349966648) -->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -18,9 +17,12 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', 'YOUR_PIXEL_ID_HERE');
+fbq('init', '2139437349966648');
+fbq('track', 'PageView');
 </script>
--->
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
+/></noscript>
 
 <style>
   :root {
@@ -185,10 +187,6 @@ fbq('init', 'YOUR_PIXEL_ID_HERE');
     var adSource = params.get("ad") || "unknown";
     var AUTO_DELAY = 1800; // ms — user sees real content for 1.5–2s before auto-redirect
     var redirected = false;
-
-    if (typeof fbq === "function") {
-      fbq("track", "PageView");
-    }
 
     function go(trigger) {
       if (redirected) return;
