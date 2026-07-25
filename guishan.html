@@ -35,18 +35,19 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     --surface: #ffffff;
     --border: #e2e8f0;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    margin: 0;
     background: var(--bg);
     color: var(--text-primary);
     font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
     line-height: 1.4;
+    -webkit-text-size-adjust: 100%;
   }
   .wrap {
     max-width: 480px;
     margin: 0 auto;
+    min-height: 100vh;
     min-height: 100dvh;
     padding: 16px 20px 20px;
     display: flex;
@@ -57,7 +58,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     display: flex;
     align-items: center;
     gap: 8px;
-    flex: 0 0 auto;
+    margin-bottom: 10px;
   }
   header img {
     width: 32px;
@@ -71,8 +72,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     font-size: 24px;
     line-height: 1.3;
     font-weight: 800;
-    margin: 10px 0 12px;
-    flex: 0 0 auto;
+    margin: 0 0 12px;
   }
 
   .subtitle {
@@ -80,7 +80,6 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     font-weight: 700;
     color: var(--accent-strong);
     margin: 0 0 16px;
-    flex: 0 0 auto;
   }
 
   .location {
@@ -91,18 +90,14 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     border-radius: 12px;
     padding: 12px 14px;
     margin: 0 0 16px;
-    flex: 0 0 auto;
   }
   .location div + div { margin-top: 4px; }
 
   .perks {
     list-style: none;
-    margin: 0;
-    padding: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    flex: 0 0 auto;
   }
   .perks li {
     display: flex;
@@ -117,23 +112,41 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
   }
   .perks .emoji { font-size: 22px; flex-shrink: 0; }
 
-  .spacer { flex: 1 1 auto; min-height: 14px; }
+  .spacer { flex: 1 1 auto; min-height: 20px; }
+
+  /* 跳轉提示列 */
+  .redirect-bar {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-strong);
+  }
+  .redirect-bar .count { font-size: 20px; font-weight: 800; }
 
   .cta-btn {
-    display: block;
+    display: flex;
     width: 100%;
-    box-sizing: border-box;
     background: var(--accent);
     color: #ffffff;
     text-align: center;
     font-size: 18px;
     font-weight: 800;
+    line-height: 1.3;
     text-decoration: none;
     padding: 16px 20px;
     border-radius: 999px;
-    min-height: 48px;
+    min-height: 56px;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 8px 20px rgba(5, 150, 105, 0.28);
-    flex: 0 0 auto;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    cursor: pointer;
   }
   .cta-btn:active { background: var(--accent-strong); }
 
@@ -142,7 +155,6 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     text-align: center;
     font-size: 11px;
     color: var(--text-muted);
-    flex: 0 0 auto;
   }
 </style>
 </head>
@@ -171,46 +183,105 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
 
   <div class="spacer"></div>
 
-  <a id="cta" class="cta-btn" href="https://www.facebook.com/groups/1561057388927848/">立即加入社團</a>
+  <div class="redirect-bar" id="redirect-bar">
+    正在帶你前往社團⋯ <span class="count" id="countdown">1</span>
+  </div>
+
+  <a id="cta"
+     class="cta-btn"
+     href="https://www.facebook.com/groups/1561057388927848/"
+     target="_top"
+     rel="noopener">立即加入社團 →</a>
 
   <footer>K團購（悠冉企業社）｜統一編號 93000758</footer>
 
 </div>
 
 <script>
-  (function () {
-    "use strict";
+(function () {
+  "use strict";
 
-    var cta = document.getElementById("cta");
-    var target = cta.getAttribute("href");
-    var params = new URLSearchParams(window.location.search);
-    var adSource = params.get("ad") || "unknown";
-    var AUTO_DELAY = 1800; // ms — user sees real content for 1.5–2s before auto-redirect
-    var redirected = false;
+  var GROUP_URL = "https://www.facebook.com/groups/1561057388927848/";
+  var params    = new URLSearchParams(window.location.search);
+  var adSource  = params.get("ad") || "unknown";
+  var ua        = navigator.userAgent;
 
-    function go(trigger) {
-      if (redirected) return;
-      redirected = true;
-      window.clearTimeout(autoTimer);
+  // ── 瀏覽器環境偵測 ──────────────────────────────────────
+  var inApp       = false;
+  var browserType = "other";
 
-      if (typeof fbq === "function") {
-        fbq("trackCustom", "ClickJoinGroup", { ad_source: adSource, trigger: trigger });
-      }
+  if (/FBAN|FBAV|FB_IAB|FBIOS|FBDV/.test(ua)) {
+    inApp = true; browserType = "facebook";
+  } else if (/Instagram/.test(ua)) {
+    inApp = true; browserType = "instagram";
+  } else if (/Line\//.test(ua)) {
+    inApp = true; browserType = "line";
+  } else if (/\bOPR\/|\bEdgA?\/|SamsungBrowser/.test(ua)) {
+    browserType = "other_app";
+  }
 
-      window.setTimeout(function () {
-        window.location.href = target;
-      }, 120);
-    }
+  var deviceType = /Mobi|Android|iPhone|iPad|iPod/.test(ua) ? "mobile" : "desktop";
 
-    var autoTimer = window.setTimeout(function () {
-      go("auto");
-    }, AUTO_DELAY);
-
-    cta.addEventListener("click", function (event) {
-      event.preventDefault();
-      go("manual");
+  if (typeof fbq === "function") {
+    fbq("trackCustom", "BrowserEnvironmentCheck", {
+      in_app_browser: inApp,
+      browser_type:   browserType,
+      device_type:    deviceType,
+      ad_source:      adSource
     });
-  })();
+  }
+
+  // ── JS 自動跳轉（1.2 秒後執行，再等 300ms 讓 fbq XHR 送出）──
+  var redirected = false;
+  function doRedirect() {
+    if (redirected) return;
+    redirected = true;
+    if (typeof fbq === "function") {
+      fbq("trackCustom", "AutoRedirect", {
+        ad_source:    adSource,
+        browser_type: browserType
+      });
+    }
+    setTimeout(function () {
+      window.location.href = GROUP_URL;
+    }, 300);
+  }
+  setTimeout(doRedirect, 1200);
+
+  // ── 倒數顯示 ─────────────────────────────────────────────
+  var countEl = document.getElementById("countdown");
+  var count   = 1;
+  var ticker  = setInterval(function () {
+    count--;
+    if (countEl) countEl.textContent = count > 0 ? count : "🚀";
+    if (count <= 0) clearInterval(ticker);
+  }, 1000);
+
+  // ── 按鈕點擊追蹤 ─────────────────────────────────────────
+  var btn   = document.getElementById("cta");
+  var fired = false;
+
+  function onTap(e) {
+    if (fired) return;
+    fired = true;
+    redirected = true;
+    clearInterval(ticker);
+    e.preventDefault();
+    if (typeof fbq === "function") {
+      fbq("trackCustom", "ClickJoinGroup", {
+        ad_source:      adSource,
+        browser_type:   browserType,
+        in_app_browser: inApp
+      });
+    }
+    setTimeout(function () {
+      window.location.href = GROUP_URL;
+    }, 300);
+  }
+
+  btn.addEventListener("touchend", onTap, { passive: false });
+  btn.addEventListener("click",    onTap);
+})();
 </script>
 
 </body>
