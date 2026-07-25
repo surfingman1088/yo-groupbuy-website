@@ -244,7 +244,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         browser_type: browserType
       });
     }
-    window.location.href = GROUP_URL;
+    window.location.replace(GROUP_URL);
   }
   setTimeout(doRedirect, 1200);
 
@@ -257,14 +257,15 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     if (count <= 0) clearInterval(ticker);
   }, 1000);
 
-  // ── 按鈕點擊追蹤（讓 <a> 原生導頁，僅記錄 Pixel 事件）────
+  // ── 按鈕點擊：攔截後用 replace() 導頁，避免 IAB 確認對話框 ──
   var fired = false;
 
-  function onTap() {
+  function onTap(e) {
     if (fired) return;
     fired = true;
     redirected = true;
     clearInterval(ticker);
+    e.preventDefault();
     if (typeof fbq === "function") {
       fbq("trackCustom", "ClickJoinGroup", {
         ad_source:      adSource,
@@ -272,9 +273,10 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         in_app_browser: inApp
       });
     }
+    window.location.replace(GROUP_URL);
   }
 
-  btn.addEventListener("touchend", onTap, { passive: true });
+  btn.addEventListener("touchend", onTap, { passive: false });
   btn.addEventListener("click",    onTap);
 })();
 </script>
