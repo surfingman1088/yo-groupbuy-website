@@ -201,11 +201,10 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
 (function () {
   "use strict";
 
-  var GROUP_URL      = "https://www.facebook.com/groups/1561057388927848/";
-  var GROUP_DEEPLINK = "fb://groups/1561057388927848";
-  var params         = new URLSearchParams(window.location.search);
-  var adSource       = params.get("ad") || "unknown";
-  var ua             = navigator.userAgent;
+  var GROUP_URL = "https://www.facebook.com/groups/1561057388927848/";
+  var params    = new URLSearchParams(window.location.search);
+  var adSource  = params.get("ad") || "unknown";
+  var ua        = navigator.userAgent;
 
   // ── 瀏覽器環境偵測 ──────────────────────────────────────
   var inApp       = false;
@@ -223,15 +222,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
 
   var deviceType = /Mobi|Android|iPhone|iPad|iPod/.test(ua) ? "mobile" : "desktop";
 
-  // FB IAB 改用 deep link 開啟原生 App，繞過 webview cookie 隔離
-  var targetUrl = (inApp && browserType === "facebook") ? GROUP_DEEPLINK : GROUP_URL;
-
-  // 同步更新按鈕 href
   var btn = document.getElementById("cta");
-  if (btn && inApp && browserType === "facebook") {
-    btn.href = GROUP_DEEPLINK;
-    btn.removeAttribute("target");
-  }
 
   if (typeof fbq === "function") {
     fbq("trackCustom", "BrowserEnvironmentCheck", {
@@ -253,7 +244,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         browser_type: browserType
       });
     }
-    window.location.href = targetUrl;
+    window.location.href = GROUP_URL;
   }
   setTimeout(doRedirect, 1200);
 
