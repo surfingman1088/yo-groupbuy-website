@@ -233,18 +233,19 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     });
   }
 
-  // ── JS 自動跳轉（1.2 秒後）────────────────────────────────
+  // ── JS 自動跳轉（1.2 秒後模擬點擊，讓 iOS 視為使用者手勢）──
   var redirected = false;
   function doRedirect() {
     if (redirected) return;
     redirected = true;
+    fired = true;
     if (typeof fbq === "function") {
       fbq("trackCustom", "AutoRedirect", {
         ad_source:    adSource,
         browser_type: browserType
       });
     }
-    window.location.replace(GROUP_URL);
+    btn.click();
   }
   setTimeout(doRedirect, 1200);
 
@@ -257,15 +258,14 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     if (count <= 0) clearInterval(ticker);
   }, 1000);
 
-  // ── 按鈕點擊：攔截後用 replace() 導頁，避免 IAB 確認對話框 ──
+  // ── 按鈕點擊追蹤（讓 <a href> 原生導頁）─────────────────
   var fired = false;
 
-  function onTap(e) {
+  function onTap() {
     if (fired) return;
     fired = true;
     redirected = true;
     clearInterval(ticker);
-    e.preventDefault();
     if (typeof fbq === "function") {
       fbq("trackCustom", "ClickJoinGroup", {
         ad_source:      adSource,
@@ -273,10 +273,9 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         in_app_browser: inApp
       });
     }
-    window.location.replace(GROUP_URL);
   }
 
-  btn.addEventListener("touchend", onTap, { passive: false });
+  btn.addEventListener("touchend", onTap, { passive: true });
   btn.addEventListener("click",    onTap);
 })();
 </script>
