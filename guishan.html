@@ -231,7 +231,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     });
   }
 
-  // ── JS 自動跳轉（1.2 秒後執行，再等 300ms 讓 fbq XHR 送出）──
+  // ── JS 自動跳轉（1.2 秒後）────────────────────────────────
   var redirected = false;
   function doRedirect() {
     if (redirected) return;
@@ -242,9 +242,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         browser_type: browserType
       });
     }
-    setTimeout(function () {
-      window.location.href = GROUP_URL;
-    }, 300);
+    window.location.href = GROUP_URL;
   }
   setTimeout(doRedirect, 1200);
 
@@ -257,16 +255,15 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     if (count <= 0) clearInterval(ticker);
   }, 1000);
 
-  // ── 按鈕點擊追蹤 ─────────────────────────────────────────
+  // ── 按鈕點擊追蹤（讓 <a> 原生導頁，僅記錄 Pixel 事件）────
   var btn   = document.getElementById("cta");
   var fired = false;
 
-  function onTap(e) {
+  function onTap() {
     if (fired) return;
     fired = true;
     redirected = true;
     clearInterval(ticker);
-    e.preventDefault();
     if (typeof fbq === "function") {
       fbq("trackCustom", "ClickJoinGroup", {
         ad_source:      adSource,
@@ -274,12 +271,9 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         in_app_browser: inApp
       });
     }
-    setTimeout(function () {
-      window.location.href = GROUP_URL;
-    }, 300);
   }
 
-  btn.addEventListener("touchend", onTap, { passive: false });
+  btn.addEventListener("touchend", onTap, { passive: true });
   btn.addEventListener("click",    onTap);
 })();
 </script>
