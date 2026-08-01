@@ -14,14 +14,272 @@
 -->
 <meta name="facebook-domain-verification" content="ju37yzpivct9mmadyubp5d0r6ff3ch" />
 
-<link rel="stylesheet" href="css/style.css">
+<style>
+  /* 關鍵 CSS：首屏（頁首＋Hero）渲染所需的樣式，內嵌避免等待外部 CSS 才能畫面。
+     這是 css/style.css 對應規則的複製，非唯一來源；日後若調整 Hero／頁首樣式，
+     記得這裡也要同步修改，否則首次載入畫面與完整版會不一致。 */
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --accent: #059669;
+    --accent-strong: #047857;
+    --accent-soft: #ecfdf5;
+    --accent-ring: rgba(5, 150, 105, 0.16);
+    --accent-contrast: #ffffff;
+    --franchise: #b45309;
+    --franchise-soft: #fffbeb;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03);
+    --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.10);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei",
+      "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  .shell { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  .stagger > * { transition-delay: calc(var(--i, 0) * 90ms); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal, .stagger > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .float-shape, .hero-visual .glyph, .hero-logo, .hero::before, .hero::after { animation: none !important; }
+  }
+  header.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(248, 250, 252, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  header.topbar.scrolled {
+    border-bottom-color: var(--border);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+  }
+  .topbar-inner { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 16px;
+    overflow: hidden;
+  }
+  .brand-mark img { width: 100%; height: 100%; object-fit: cover; }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.25; }
+  .brand-text .zh { font-weight: 700; font-size: 15px; color: var(--text-primary); }
+  .brand-text .en { font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; }
+  nav.main-nav { display: flex; align-items: center; gap: 28px; }
+  nav.main-nav a {
+    position: relative;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+  }
+  nav.main-nav a::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -4px;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s var(--ease);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+      transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+  .btn-primary { background: var(--accent); color: var(--accent-contrast); box-shadow: var(--shadow-sm); }
+  .btn-outline { background: var(--surface); color: var(--text-primary); border-color: var(--border-strong); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+  .hero { padding: 88px 0 72px; position: relative; overflow: hidden; }
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -160px;
+    right: -140px;
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+    z-index: -1;
+    animation: driftBlob 14s ease-in-out infinite;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    bottom: -180px;
+    left: -160px;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(5,150,105,0.07) 0%, transparent 70%);
+    z-index: -1;
+    animation: driftBlob 18s ease-in-out infinite reverse;
+  }
+  @keyframes driftBlob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-24px, 24px) scale(1.06); }
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 56px;
+    align-items: center;
+  }
+  .hero h1 { font-size: 44px; line-height: 1.25; margin: 16px 0 18px; font-weight: 800; letter-spacing: -0.01em; }
+  .hero h1 .hl { color: var(--accent-strong); }
+  .hero p.lead { font-size: 17px; color: var(--text-secondary); max-width: 46ch; margin: 0 0 32px; }
+  .hero p.lead strong { color: var(--text-primary); font-weight: 700; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 48px;
+    max-width: 480px;
+  }
+  .hero-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 14px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  }
+  .hero-stat .num {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-stat .label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .hero-visual {
+    background: linear-gradient(160deg, var(--accent) 0%, var(--accent-strong) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+    border-radius: 28px;
+    aspect-ratio: 4/5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .hero-visual .glyph {
+    font-size: 160px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.16);
+    user-select: none;
+    animation: floatSlow 6s ease-in-out infinite;
+  }
+  .hero-logo {
+    width: 42%;
+    max-width: 180px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    box-shadow: 0 20px 48px rgba(0,0,0,0.28);
+    animation: floatSlow 6s ease-in-out infinite;
+  }
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  .float-shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.14);
+    animation: floatSlow 7s ease-in-out infinite;
+  }
+  .float-shape.s1 { width: 64px; height: 64px; top: 14%; left: 12%; animation-duration: 8s; }
+  .float-shape.s2 { width: 36px; height: 36px; top: 68%; left: 78%; animation-duration: 6s; animation-delay: 1s; }
+  .float-shape.s3 { width: 24px; height: 24px; top: 30%; left: 82%; animation-duration: 9s; animation-delay: 2s; }
+  .hero-visual .caption {
+    position: absolute;
+    bottom: 28px;
+    left: 28px;
+    right: 28px;
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.92;
+  }
+  .hero-visual .caption strong { display: block; font-size: 16px; margin-bottom: 4px; }
+  @media (max-width: 900px) {
+    nav.main-nav { display: none; }
+    .hero-grid { grid-template-columns: minmax(0, 1fr); }
+    .hero-visual { aspect-ratio: 16/9; }
+    .hero h1 { font-size: 32px; }
+  }
+  @media (max-width: 560px) {
+    .shell { padding: 0 20px; }
+  }
+</style>
+<link rel="preload" href="css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="css/style.css"></noscript>
 </head>
 <body>
 
 <header class="topbar" id="topbar">
   <div class="shell topbar-inner">
     <a class="brand" href="#top">
-      <div class="brand-mark"><img src="assets/logo.jpg" alt="YO!團購"></div>
+      <div class="brand-mark"><img src="assets/logo.webp" width="72" height="72" alt="YO!團購"></div>
       <div class="brand-text">
         <span class="zh">YO！團購</span>
         <span class="en">YO GROUP BUYING</span>
@@ -72,7 +330,7 @@
         <div class="float-shape s1"></div>
         <div class="float-shape s2"></div>
         <div class="float-shape s3"></div>
-        <img class="hero-logo" src="assets/logo.jpg" alt="YO!團購">
+        <img class="hero-logo" src="assets/logo.webp" width="360" height="360" fetchpriority="high" alt="YO!團購">
         <div class="caption">
           <strong>YO團購</strong>
           八德・三峽・蘆竹・林口・樹林・藝文，以及持續加入的加盟夥伴分店
@@ -115,8 +373,8 @@
         </div>
       </div>
       <div class="section-photo-wrap reveal">
-        <img class="section-photo" src="assets/comparison-chart.jpg" alt="你選哪個？其他團購不退貨不退款、先付款才給貨、品質無保證、一件要付運費；YO！團購可退貨退款、一手交錢一手交貨、小農直送超新鮮、一件也免運費">
-        <img class="section-photo" src="assets/promo-guishan-opening.jpg" alt="YO！團購小農直送 — 每週新鮮蔬果直達分店">
+        <img class="section-photo" src="assets/comparison-chart.jpg" width="1200" height="1200" loading="lazy" alt="你選哪個？其他團購不退貨不退款、先付款才給貨、品質無保證、一件要付運費；YO！團購可退貨退款、一手交錢一手交貨、小農直送超新鮮、一件也免運費">
+        <img class="section-photo" src="assets/promo-guishan-opening.jpg" width="1200" height="1200" loading="lazy" alt="YO！團購小農直送 — 每週新鮮蔬果直達分店">
         <p class="section-photo-caption">跟一般團購比較，YO！團購在意的是買得安心。</p>
       </div>
     </div>
@@ -158,7 +416,7 @@
       </div>
 
       <div class="news-hero reveal">
-        <img class="news-photo" src="assets/promo-guishan-opening.jpg" alt="龜山K團購長庚A8店 — 小農直送新鮮蔬果，產地直達比超市新鮮、一件免運、可退貨退款">
+        <img class="news-photo" src="assets/promo-guishan-opening.jpg" width="1200" height="1200" loading="lazy" alt="龜山K團購長庚A8店 — 小農直送新鮮蔬果，產地直達比超市新鮮、一件免運、可退貨退款">
         <div class="news-hero-row">
           <div class="news-date"><span class="d">8/15</span><span class="m">盛大開幕</span></div>
           <div class="news-body">
@@ -176,7 +434,7 @@
       </div>
 
       <div class="promo-video-wrap reveal">
-        <video class="promo-video" controls preload="metadata" poster="assets/promo-video-poster.jpg">
+        <video class="promo-video" controls preload="none" poster="assets/promo-video-poster.jpg">
           <source src="assets/promo-video.mp4" type="video/mp4">
         </video>
         <div class="promo-video-info">
@@ -205,17 +463,17 @@
 
       <div class="card-grid stagger" style="margin-top:20px">
         <div class="pillar-card reveal" style="--i:0">
-          <img class="price-photo" src="assets/product-beef-soup.jpg" alt="紅龍牛肉湯">
+          <img class="price-photo" src="assets/product-beef-soup.jpg" width="945" height="1094" loading="lazy" alt="紅龍牛肉湯">
           <h4 style="margin:0 0 10px;font-size:14px;color:var(--text-secondary)">紅龍牛肉湯（450g/包）</h4>
           <div class="price-tag">$59 <span class="unit">開幕驚爆價</span></div>
         </div>
         <div class="pillar-card reveal" style="--i:1">
-          <img class="price-photo" src="assets/product-chicken-nuggets.jpg" alt="紅龍雞塊">
+          <img class="price-photo" src="assets/product-chicken-nuggets.jpg" width="800" height="800" loading="lazy" alt="紅龍雞塊">
           <h4 style="margin:0 0 10px;font-size:14px;color:var(--text-secondary)">紅龍雞塊（約300g/包）</h4>
           <div class="price-tag">$139 <span class="unit">開幕驚爆價</span></div>
         </div>
         <div class="pillar-card reveal" style="--i:2">
-          <img class="price-photo" src="assets/product-wet-wipes.jpg" alt="Pure Water Wipes 純水柔濕巾">
+          <img class="price-photo" src="assets/product-wet-wipes.jpg" width="484" height="351" loading="lazy" alt="Pure Water Wipes 純水柔濕巾">
           <h4 style="margin:0 0 10px;font-size:14px;color:var(--text-secondary)">Lucky濕紙巾（80抽）</h4>
           <div class="price-tag">$0 <span class="unit">開幕當天免費</span></div>
         </div>
@@ -318,7 +576,7 @@
     <div class="footer-grid">
       <div class="footer-col">
         <a class="brand" href="#top">
-          <div class="brand-mark"><img src="assets/logo.jpg" alt="YO!團購"></div>
+          <div class="brand-mark"><img src="assets/logo.webp" width="72" height="72" alt="YO!團購"></div>
           <div class="brand-text">
             <span class="zh">YO！團購</span>
           </div>
