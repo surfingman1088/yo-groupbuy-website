@@ -450,6 +450,7 @@
   .tag-direct { background: var(--accent-soft); color: var(--accent-strong); }
   .tag-franchise { background: var(--franchise-soft); color: var(--franchise); }
   .branch-card .desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; min-height: 34px; }
+  .branch-card .btn { width: 100%; justify-content: center; }
 
   /* ── News / opening promo ──────────────────────────── */
   .news-hero {
