@@ -43,6 +43,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
     line-height: 1.4;
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
   }
   .wrap {
     max-width: 480px;
@@ -120,6 +121,38 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
   }
   .cta-btn:active { background: var(--accent-strong); }
 
+  .iab-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+  }
+  .iab-hint-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #fde68a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: #92400e;
+  }
+  .iab-hint-text {
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #92400e;
+  }
+
   footer {
     margin-top: 14px;
     text-align: center;
@@ -152,6 +185,11 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
      target="_top"
      rel="noopener">立即加入社團 →</a>
 
+  <div id="iab-hint" class="iab-hint" hidden>
+    <span class="iab-hint-icon">⋯</span>
+    <span class="iab-hint-text">若沒有自動跳轉，請點右上角「⋯」選擇「在瀏覽器中開啟」</span>
+  </div>
+
   <footer>K團購（悠冉企業社）｜統一編號 93000758</footer>
 
 </div>
@@ -180,14 +218,34 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
   }
 
   var deviceType = /Mobi|Android|iPhone|iPad|iPod/.test(ua) ? "mobile" : "desktop";
+  var isAndroid  = /Android/.test(ua);
 
   var btn = document.getElementById("cta");
+
+  // ── Android：優先用 intent:// 直接開 FB App，開不了就退回瀏覽器 ──
+  // （iOS 的 Universal Links 在別的 App 內建瀏覽器裡本來就不會生效，
+  //   蘋果平台限制，intent:// 是 Android 專屬語法，iOS 維持原本網址）
+  if (isAndroid) {
+    var withoutScheme = GROUP_URL.replace(/^https?:\/\//, "");
+    var intentUrl = "intent://" + withoutScheme +
+      "#Intent;scheme=https;package=com.facebook.katana;S.browser_fallback_url=" +
+      encodeURIComponent(GROUP_URL) + ";end";
+    btn.setAttribute("href", intentUrl);
+  }
+
+  // ── 非 Android 的 App 內建瀏覽器（iOS 上的 FB／IG／Line 等）：
+  //   自動跳轉不一定能直接開 App，顯示手動開啟提示當退路 ──
+  if (inApp && !isAndroid) {
+    var hintEl = document.getElementById("iab-hint");
+    if (hintEl) hintEl.hidden = false;
+  }
 
   if (typeof fbq === "function") {
     fbq("trackCustom", "BrowserEnvironmentCheck", {
       in_app_browser: inApp,
       browser_type:   browserType,
       device_type:    deviceType,
+      is_android:     isAndroid,
       ad_source:      adSource
     });
   }
