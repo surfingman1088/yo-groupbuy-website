@@ -296,6 +296,13 @@
   </div>
 </header>
 
+<div class="shell">
+  <div id="iab-hint-banner" class="iab-hint-banner" hidden>
+    <span class="iab-hint-icon">⋯</span>
+    <span class="iab-hint-text">偵測到您從App內建瀏覽器開啟本頁，若點擊「加入分店社團」後出現空白頁面，請點右上角「⋯」選擇「在瀏覽器中開啟」</span>
+  </div>
+</div>
+
 <main id="top">
 
   <section class="hero">
@@ -571,6 +578,38 @@
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
+
+    // ── App內建瀏覽器（LINE／FB／IG）偵測：Android優先直開FB App，
+    //    其他平台顯示手動開啟提示，避免點「加入分店社團」卡在空白頁 ──
+    var ua = navigator.userAgent;
+    var inApp = false;
+    var browserType = "other";
+    if (/FBAN|FBAV|FB_IAB|FBIOS|FBDV/.test(ua)) {
+      inApp = true; browserType = "facebook";
+    } else if (/Instagram/.test(ua)) {
+      inApp = true; browserType = "instagram";
+    } else if (/Line\//.test(ua)) {
+      inApp = true; browserType = "line";
+    }
+    var isAndroid = /Android/.test(ua);
+
+    var groupLinks = document.querySelectorAll('a[href*="facebook.com"]');
+
+    if (isAndroid) {
+      groupLinks.forEach(function (link) {
+        var groupUrl = link.getAttribute("href");
+        var withoutScheme = groupUrl.replace(/^https?:\/\//, "");
+        var intentUrl = "intent://" + withoutScheme +
+          "#Intent;scheme=https;package=com.facebook.katana;S.browser_fallback_url=" +
+          encodeURIComponent(groupUrl) + ";end";
+        link.setAttribute("href", intentUrl);
+      });
+    }
+
+    if (inApp && !isAndroid) {
+      var hintBanner = document.getElementById("iab-hint-banner");
+      if (hintBanner) hintBanner.hidden = false;
+    }
 
     var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
