@@ -262,7 +262,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         browser_type: browserType
       });
     }
-    btn.click();
+    window.location.href = btn.getAttribute("href");
   }
   setTimeout(doRedirect, 1200);
 
