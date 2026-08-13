@@ -222,19 +222,8 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
 
   var btn = document.getElementById("cta");
 
-  // ── Android：優先用 intent:// 直接開 FB App，開不了就退回瀏覽器 ──
-  // （iOS 的 Universal Links 在別的 App 內建瀏覽器裡本來就不會生效，
-  //   蘋果平台限制，intent:// 是 Android 專屬語法，iOS 維持原本網址）
-  if (isAndroid) {
-    var withoutScheme = GROUP_URL.replace(/^https?:\/\//, "");
-    var intentUrl = "intent://" + withoutScheme +
-      "#Intent;scheme=https;package=com.facebook.katana;S.browser_fallback_url=" +
-      encodeURIComponent(GROUP_URL) + ";end";
-    btn.setAttribute("href", intentUrl);
-  }
-
   // ── 非 Android 的 App 內建瀏覽器（iOS 上的 FB／IG／Line 等）：
-  //   自動跳轉不一定能直接開 App，顯示手動開啟提示當退路 ──
+  //   iOS 沒有對應的深連結技術可用，顯示手動開啟提示當退路 ──
   if (inApp && !isAndroid) {
     var hintEl = document.getElementById("iab-hint");
     if (hintEl) hintEl.hidden = false;
@@ -250,7 +239,30 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     });
   }
 
-  // ── JS 自動跳轉（1.2 秒後模擬點擊，讓 iOS 視為使用者手勢）──
+  // ── 導頁核心函式：Android 先嘗試 intent:// 直開 FB App，
+  //   並且不管手機跳出的「要用FB App開啟嗎？」系統詢問視窗使用者
+  //   選Yes或No、或直接把視窗滑掉，1.5秒後都會用JS強制檢查一次
+  //   ──如果畫面還停在中繼頁（代表App沒有真的被打開），就直接
+  //   改跳去Facebook網頁版社團，確保不管使用者怎麼選都不會卡住。
+  //   （iOS沒有intent://這種語法，直接跳網頁版即可）──
+  function goToGroup() {
+    if (isAndroid) {
+      var withoutScheme = GROUP_URL.replace(/^https?:\/\//, "");
+      var intentUrl = "intent://" + withoutScheme +
+        "#Intent;scheme=https;package=com.facebook.katana;S.browser_fallback_url=" +
+        encodeURIComponent(GROUP_URL) + ";end";
+      window.location.href = intentUrl;
+      setTimeout(function () {
+        if (!document.hidden) {
+          window.location.href = GROUP_URL;
+        }
+      }, 1500);
+    } else {
+      window.location.href = GROUP_URL;
+    }
+  }
+
+  // ── JS 自動跳轉（1.2 秒後）──
   var redirected = false;
   function doRedirect() {
     if (redirected) return;
@@ -262,7 +274,7 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         browser_type: browserType
       });
     }
-    window.location.href = btn.getAttribute("href");
+    goToGroup();
   }
   setTimeout(doRedirect, 1200);
 
@@ -275,10 +287,10 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
     if (count <= 0) clearInterval(ticker);
   }, 1000);
 
-  // ── 按鈕點擊追蹤（讓 <a href> 原生導頁）─────────────────
+  // ── 按鈕點擊：攔截原生導頁，改用同一套會自動退回網頁版的邏輯 ──
   var fired = false;
 
-  function onTap() {
+  function onTap(event) {
     if (fired) return;
     fired = true;
     redirected = true;
@@ -290,10 +302,11 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         in_app_browser: inApp
       });
     }
+    if (event && event.cancelable) event.preventDefault();
+    goToGroup();
   }
 
-  btn.addEventListener("touchend", onTap, { passive: true });
-  btn.addEventListener("click",    onTap);
+  btn.addEventListener("click", onTap);
 })();
 </script>
 
