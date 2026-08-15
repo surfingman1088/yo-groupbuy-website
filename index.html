@@ -581,18 +581,35 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
-    // ── Android：加入社團按鈕優先用intent://直開FB App ──
+    // ── Android：加入社團按鈕優先用intent://直開FB App，
+    //    並且不管系統詢問視窗有沒有正常跳出來、使用者選了什麼，
+    //    1.5秒後都會用JS檢查一次，畫面還停在原地就強制改跳網頁版，
+    //    確保點下去一定會有反應，不會卡住不動 ──
     var isAndroid = /Android/.test(navigator.userAgent);
 
     if (isAndroid) {
       var groupLinks = document.querySelectorAll('a[href*="facebook.com"]');
       groupLinks.forEach(function (link) {
         var groupUrl = link.getAttribute("href");
+        link.setAttribute("data-fallback-url", groupUrl);
         var withoutScheme = groupUrl.replace(/^https?:\/\//, "");
         var intentUrl = "intent://" + withoutScheme +
           "#Intent;scheme=https;package=com.facebook.katana;S.browser_fallback_url=" +
           encodeURIComponent(groupUrl) + ";end";
         link.setAttribute("href", intentUrl);
+      });
+
+      document.addEventListener("click", function (event) {
+        var link = event.target.closest("[data-fallback-url]");
+        if (!link) return;
+        var fallbackUrl = link.getAttribute("data-fallback-url");
+        event.preventDefault();
+        window.location.href = link.getAttribute("href");
+        setTimeout(function () {
+          if (!document.hidden) {
+            window.location.href = fallbackUrl;
+          }
+        }, 1500);
       });
     }
 
