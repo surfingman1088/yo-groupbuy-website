@@ -621,6 +621,14 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
       }
     });
 
+    // Facebook自己的iOS內建瀏覽器對facebook.com連結另有一套內部
+    // 原生處理機制，我們用JS攔截點擊、自己assign location.href
+    // 反而會跟它互相卡住、完全沒反應；Instagram／LINE等其他內建
+    // 瀏覽器則是JS攔截才能穩定導頁。兩邊需求相反，用UA分開處理──
+    // 只有「iOS上的Facebook」略過JS攔截，改用原生<a href>導頁。
+    var isFacebookApp = /FBAN|FBAV|FB_IAB|FBIOS|FBDV/.test(navigator.userAgent);
+    var skipIntercept = isFacebookApp && !isAndroid;
+
     document.addEventListener("click", function (event) {
       var link = event.target.closest("[data-fallback-url]");
       if (!link) return;
@@ -635,6 +643,8 @@ src="https://www.facebook.com/tr?id=2139437349966648&ev=PageView&noscript=1"
         fbq("track", "Lead", { content_name: branch });
         fbq("trackCustom", "ClickJoinGroup", { branch: branch });
       }
+
+      if (skipIntercept) return;
 
       event.preventDefault();
       window.location.href = link.getAttribute("href");
