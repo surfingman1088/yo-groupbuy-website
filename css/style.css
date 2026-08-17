@@ -432,7 +432,7 @@
     justify-content: space-between;
     margin-bottom: 14px;
   }
-  .branch-card h4 { font-size: 17px; margin: 0; font-weight: 700; }
+  .branch-card h4 { font-size: 21px; margin: 0; font-weight: 700; }
   .tag {
     font-size: 11px;
     font-weight: 700;
@@ -443,7 +443,7 @@
   .tag-direct { background: var(--accent-soft); color: var(--accent-strong); }
   .tag-franchise { background: var(--franchise-soft); color: var(--franchise); }
   .branch-card .desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; min-height: 34px; }
-  .branch-card .btn { width: 100%; justify-content: center; }
+  .branch-card .btn { width: 100%; justify-content: center; font-size: 17px; padding: 11px 14px; }
 
   /* ── News carousel ─────────────────────────────────── */
   .trust-badge {
