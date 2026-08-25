@@ -444,6 +444,15 @@
   .tag-franchise { background: var(--franchise-soft); color: var(--franchise); }
   .branch-card .desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; min-height: 34px; }
   .branch-card .btn { width: 100%; justify-content: center; font-size: 17px; padding: 11px 14px; }
+  .group-link-text {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--accent-strong);
+    text-decoration: underline;
+    word-break: break-all;
+    text-align: center;
+  }
 
   /* ── News carousel ─────────────────────────────────── */
   .trust-badge {
